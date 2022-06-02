@@ -9,16 +9,10 @@ Boats is related to User
 Pagination
     collection must include a property that indicates how many total items are in the collection
 
-self link on everything -- POSSIBLY DONE ALREADY
-
 CRUD on everything
     PUT and PATCH for every entity
 
 every CRUD operation for a Boat must be protected and require a JWT
-
-create relationship and remove relationship -- POSSIBLY DONE ALREADY
-    POST /boats/:boat_id/loads/:load_id
-    DELETE /boats/:boat_id/loads/:load_id
 
 all response bodies should be in JSON
     double check/refactor constants.handle_responses

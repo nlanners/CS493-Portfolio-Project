@@ -21,24 +21,28 @@ module.exports.get_boat = get_boat;
 async function post_boat(name, type, length, url){
     let key = datastore.key(c.BOAT);
 
-    const new_boat = {"name":name, "type":type, "length":length, "loads": [], "self": ""};
-    await datastore.save({"key":key, "data":new_boat});
-    const [boat] = await datastore.get(key);
-    boat.self = url + boat[ds.Datastore.KEY].id;
-    await datastore.update({key:key, data:boat});
-    return ds.fromDatastore(boat);
-                
+    try {
+        const new_boat = {"name":name, "type":type, "length":length, "loads": [], "self": ""};
+        await datastore.save({"key":key, "data":new_boat});
+        const [boat] = await datastore.get(key);
+        boat.self = url + boat[ds.Datastore.KEY].id;
+        await datastore.update({key:key, data:boat});
+        return ds.fromDatastore(boat);
+    } catch (err) {
+        console.log(err);
+    }
+
 }
 
 // Get all boats from database
 async function get_all_boats(req) {
     try {
-        let q = datastore.createQuery(c.BOAT).limit(c.limit);
+        let q = datastore.createQuery(c.BOAT).limit(c.limit).order('name');
         const results = {};
         if (Object.keys(req.query).includes('cursor')) {
             q = q.start(req.query.cursor);
         }
-        const entities = await datastore.runQuery(q)
+        const entities = await datastore.runQuery(q);
         results.boats = entities[0].map(ds.fromDatastore);
         if (entities[1].moreResults !== ds.Datastore.NO_MORE_RESULTS) {
             results.next = ds.createURL(req) + '?cursor=' + entities[1].endCursor;
@@ -68,17 +72,17 @@ async function delete_boat(id) {
         if (!boat) {
             return NOT_FOUND;
         }
-    
+
         for (let l in boat.loads) {
             let load = await Loads.get_load(boat.loads[l].id);
             load.carrier = null;
             await datastore.update(ds.createEntity(load));
         }
-    
+
         return datastore.delete(boat[ds.Datastore.KEY]);
     } catch (err) {
         console.log(err);
-    }   
+    }
 }
 
 // Put load on boat in the database
@@ -93,7 +97,7 @@ async function assign_load_to_boat(boat_id, load_id) {
             } else {
                 boat.loads.push({"id": load.id, "self": load.self});
                 load.carrier = {"id": boat.id, "name": boat.name, "self": boat.self};
-                
+
                 await datastore.update(ds.createEntity(boat));
                 await datastore.update(ds.createEntity(load));
                 return c.NO_CONTENT;
@@ -101,7 +105,7 @@ async function assign_load_to_boat(boat_id, load_id) {
         } else {
             return c.NOT_FOUND;
         }
-        
+
     } catch (err) {
         console.log(err);
     }
@@ -118,7 +122,7 @@ async function remove_load_from_boat(boat_id, load_id) {
             load.carrier = null;
             let boatLoads = boat.loads.filter( value => value.id != load.id);
             boat.loads = boatLoads;
-            
+
             await datastore.update(ds.createEntity(boat));
             await datastore.update(ds.createEntity(load));
 
@@ -139,22 +143,24 @@ async function get_boat_loads(boat_id) {
                 const l = await Loads.get_load(load.id);
                 loads.push(l);
             }
-
             return loads;
-            
         } else {
             return false;
         }
-        
     } catch (err) {
         console.log(err);
-    }   
+    }
 }
 
 
 /******************************* CONTROLLERS ********************************************/
 
+// CREATE a new boat in the database
 router.post('/', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
     if (req.body.name && req.body.type && req.body.length) {
         try {
             const url = ds.createURL(req);
@@ -170,15 +176,27 @@ router.post('/', async (req, res) => {
 
 // READ all boats in database
 router.get('/', async (req, res) => {
-    const boats = await get_all_boats(req);
-    constants.handle_response(res, c.OK, boats);
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
+    try {
+        const boats = await get_all_boats(req);
+        constants.handle_response(res, c.OK, [boats]);
+    } catch (err) {
+        console.log(err);
+    }
 });
 
 // READ one boat from database
 router.get('/:boat_id', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
     const boat = await get_boat(req.params.boat_id)
     if (boat) {
-        constants.handle_response(res, c.OK, boat);
+        constants.handle_response(res, c.OK, [boat]);
     } else {
         constants.handle_response(res, c.NOT_FOUND)
     }
@@ -186,6 +204,10 @@ router.get('/:boat_id', async (req, res) => {
 
 // DELETE a boat from database
 router.delete('/:boat_id', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
     try {
         const stuff = await delete_boat(req.params.boat_id)
         if (stuff === c.NOT_FOUND) {
@@ -200,6 +222,10 @@ router.delete('/:boat_id', async (req, res) => {
 
 // PUT load on boat
 router.put('/:boat_id/loads/:load_id', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
     try {
         const status = await assign_load_to_boat(req.params.boat_id, req.params.load_id);
         constants.handle_response(res, status);
@@ -210,6 +236,10 @@ router.put('/:boat_id/loads/:load_id', async (req, res) => {
 
 // DELETE a load from a boat
 router.delete('/:boat_id/loads/:load_id', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
     try {
         const status = await remove_load_from_boat(req.params.boat_id, req.params.load_id);
         constants.handle_response(res, status);
@@ -220,15 +250,17 @@ router.delete('/:boat_id/loads/:load_id', async (req, res) => {
 
 // GET all loads on a single boat
 router.get('/:boat_id/loads', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
     try {
         const loads = await get_boat_loads(req.params.boat_id);
         if (loads) {
-            constants.handle_response(res, c.OK, {"loads": loads});
+            constants.handle_response(res, c.OK, [{"loads": loads}]);
         } else {
             constants.handle_response(res, c.NOT_FOUND);
         }
-        
-
     } catch (err) {
         console.log(err);
     }

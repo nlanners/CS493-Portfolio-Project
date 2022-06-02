@@ -89,6 +89,10 @@ async function delete_load(id) {
 
 // CREATE a load
 router.post('/', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
     if (req.body.volume && req.body.item && req.body.creation_date) {
         try {
             const url = ds.createURL(req);
@@ -104,10 +108,14 @@ router.post('/', async (req, res) => {
 
 // READ all loads in database
 router.get('/', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+    
 
     try {
         const loads = await get_all_loads(req);
-        constants.handle_response(res, c.OK, loads);
+        constants.handle_response(res, c.OK, [loads]);
     } catch (err) {
         console.log(err);
     }
@@ -115,9 +123,13 @@ router.get('/', async (req, res) => {
 
 // READ one load from database
 router.get('/:load_id', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
     const load = await get_load(req.params.load_id);
     if (load) {
-        constants.handle_response(res, c.OK, load);
+        constants.handle_response(res, c.OK, [load]);
     } else {
         constants.handle_response(res, c.NOT_FOUND);
     }
@@ -125,6 +137,10 @@ router.get('/:load_id', async (req, res) => {
 
 // DELETE a load from database
 router.delete('/:load_id', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
     try {
         const status = await delete_load(req.params.load_id)
         constants.handle_response(res, status);
