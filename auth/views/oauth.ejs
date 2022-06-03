@@ -1,0 +1,32 @@
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-2">
+            <h1>User Info</h1>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        
+       <table class="table table-striped-columns">
+           <thead>
+               <tr>
+                   <th>First Name</th>
+                   <th>Last Name</th>
+                   <th>JWT</th>
+                   <th>Unique ID</th>
+               </tr>
+           </thead>
+           <tbody>
+               <tr>
+                   <td><%- firstName %></td>
+                   <td><%- lastName %></td>
+                   <td class="text-wrap text-break" ><%- token %></td>
+                   <td class="text-wrap text-break"><%- sub %></td>
+               </tr>
+           </tbody>
+       </table>
+       
+        
+    </div>
+    <h1>A user has been added/updated to the Marina API</h1>
+
+</div>

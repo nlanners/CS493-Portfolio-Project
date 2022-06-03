@@ -1,6 +1,7 @@
 module.exports.constants = {
     'BOAT': 'Boats',
     'LOAD': 'Loads',
+    'USER': 'Users',
     'OK': 200,
     'CREATED': 201,
     'NO_CONTENT': 204,
