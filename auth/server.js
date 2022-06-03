@@ -21,7 +21,7 @@ app.set('view engine', 'ejs')
 
 const POSSIBLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const creds = c.creds;
-const redirect = 'http://localhost:8888/oauth';
+const redirect = 'https://oauth-dot-lannersn-portfolio-project.uc.r.appspot.com/oauth';
 const client = new OAuth2Client(creds.client_id);
 
 /******************************* START MODEL FUNCITONS ********************************/
