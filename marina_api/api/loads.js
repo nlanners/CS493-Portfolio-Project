@@ -44,6 +44,11 @@ async function get_all_loads(req) {
         if (entities[1].moreResults !== ds.Datastore.NO_MORE_RESULTS) {
             results.next = ds.createURL(req) + '?cursor=' + entities[1].endCursor;
         }
+
+        q = datastore.createQuery(c.LOAD).select('__key__');
+        const keys = await datastore.runQuery(q);
+        results.total = keys[0].length;
+
         return results;
     } catch (err) {
         console.log(err);
@@ -133,6 +138,15 @@ router.get('/:load_id', async (req, res) => {
     } else {
         constants.handle_response(res, c.NOT_FOUND);
     }
+});
+
+// UPDATE load with all data
+router.put('/:load_id', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
+    
 });
 
 // DELETE a load from database

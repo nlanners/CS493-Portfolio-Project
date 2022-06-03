@@ -7,6 +7,7 @@ module.exports.constants = {
     'NO_CONTENT': 204,
     'SEE_OTHER': 303,
     'BAD_REQUEST': 400,
+    'UNAUTHORIZED': 401,
     'FORBIDDEN': 403,
     'NOT_FOUND': 404,
     'BAD_METHOD': 405,
@@ -29,6 +30,7 @@ module.exports.messages = {
     'NOT_ACCEPTABLE': 'Response must be sent as ',
     'NOT_FOUND': "No object with this id exists",
     'UNSUPPORTED': "Data must be sent as Content-Type: application/json",
+    'UNAUTHORIZED': "Not authorized to access this resource"
 }
 
 module.exports.handle_response = (res, result, extra=null) => {
@@ -39,7 +41,7 @@ module.exports.handle_response = (res, result, extra=null) => {
             break;
 
     case    this.constants.BAD_REQUEST:
-            res.status(this.constants.BAD_REQUEST).send(extra);
+            res.status(this.constants.BAD_REQUEST).json({"error":extra});
             break;
 
         case this.constants.FORBIDDEN:
@@ -77,6 +79,9 @@ module.exports.handle_response = (res, result, extra=null) => {
         case this.constants.UNSUPPORTED:
             res.status(this.constants.UNSUPPORTED).json({"error":this.messages.UNSUPPORTED});
             break;
+
+        case this.constants.UNAUTHORIZED:
+            res.status(this.constants.UNAUTHORIZED).json({"error":this.messages.UNAUTHORIZED});
 
     }
 }

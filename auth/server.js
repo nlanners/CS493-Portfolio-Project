@@ -21,7 +21,7 @@ app.set('view engine', 'ejs')
 
 const POSSIBLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 const creds = c.creds;
-const redirect = 'http://localhost:8080/oauth';
+const redirect = 'http://localhost:8888/oauth';
 const client = new OAuth2Client(creds.client_id);
 
 /******************************* START MODEL FUNCITONS ********************************/
@@ -120,10 +120,9 @@ async function getSub(token) {
 async function createUser(sub, name) {
     const id = sub.slice(0,16);
     const key = datastore.key(['Users', parseInt(id, 10)]);
-    console.log(key.path);
 
     try {
-        const new_user = {"name": name, "id": sub};
+        const new_user = {"name": name, "id": sub, "boats":[]};
         await datastore.upsert({"key": key, "data": new_user});
         return new_user;
 
@@ -183,7 +182,7 @@ app.get('/oauth', async (req, res) => {
 
 /***************************************** END CONTROLLER FUNCTIONS *******************************/
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8888;
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}...`);
 });

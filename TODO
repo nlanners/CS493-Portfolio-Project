@@ -1,29 +1,9 @@
-implement Users route - users.js
-    authentication
-
-Boats is related to User
-    only show boats that are owned by user authenticated by the JWT supplied
-
 Pagination
     collection must include a property that indicates how many total items are in the collection
 
 CRUD on everything
     PUT and PATCH for every entity
 
-every CRUD operation for a Boat must be protected and require a JWT
-
-all response bodies should be in JSON
-    double check/refactor constants.handle_responses
-
-any request to an endpoint should include 'application/json' in the Accept header, otherwise be rejected.
-
-
 STATUS CODES
 
-200
-201
-204
-401
-403
 405
-406

@@ -5,7 +5,7 @@ const creds = {
     "token_uri":"https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
     "client_secret":"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",
-    "redirect_uris":["http://localhost:8080/oauth"]
+    "redirect_uris":["http://localhost:8888/oauth"]
 }
 
 module.exports.creds = creds;

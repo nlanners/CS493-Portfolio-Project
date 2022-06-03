@@ -19,7 +19,7 @@ async function post_user(name, sub) {
     const key = datastore.key([c.USER, parseInt(id, 10)]);
 
     try {
-        const new_user = {"name": name, "id": id};
+        const new_user = {"name": name, "id": id, "boats": []};
         await datastore.upsert({"key": key, "data": new_user});
         return new_user;
 
