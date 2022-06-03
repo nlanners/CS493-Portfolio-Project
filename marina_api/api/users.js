@@ -71,6 +71,19 @@ router.get('/', async (req, res) => {
     }
 });
 
+// BAD ROUTES
+router.delete('/', (req, res) => {
+    constants.handle_response(res, c.BAD_METHOD);
+});
+
+router.put('/', (req, res) => {
+    constants.handle_response(res, c.BAD_METHOD);
+});
+
+router.patch('/', (req, res) => {
+    constants.handle_response(res, c.BAD_METHOD);
+})
+
 /********************** End Controller Functions *********************/
 
 

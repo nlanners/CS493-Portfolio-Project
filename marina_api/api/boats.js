@@ -95,7 +95,14 @@ async function put_boat(id, name, type, length, url, sub) {
         }
 
         if (try_boat) {
-            const params = {"name": name, "type": type, "length": length, "loads": try_boat.loads, "self": try_boat.self, "owner": sub};
+            const params = {
+                "name": name,
+                "type": type,
+                "length": length,
+                "loads": try_boat.loads,
+                "self": try_boat.self,
+                "owner": sub
+            };
             await datastore.update({"key": key, "data": params});
             return c.NO_CONTENT;
 
@@ -281,6 +288,7 @@ router.get('/', async (req, res) => {
 
     if (!req.headers.authorization) {
         constants.handle_response(res, c.UNAUTHORIZED, m.UNAUTHORIZED);
+        return;
     }
 
     try {
@@ -395,8 +403,10 @@ router.delete('/:boat_id', async (req, res) => {
         const result = await delete_boat(req.params.boat_id, sub);
         if (result === c.NOT_FOUND) {
             constants.handle_response(res, c.NOT_FOUND);
+            return;
         } else if (result === c.UNAUTHORIZED) {
             constants.handle_response(res, c.UNAUTHORIZED);
+            return;
         } else {
             constants.handle_response(res, c.NO_CONTENT);
         }
@@ -413,6 +423,7 @@ router.put('/:boat_id/loads/:load_id', async (req, res) => {
 
     if (!req.headers.authorization) {
         constants.handle_response(res, c.UNAUTHORIZED, m.UNAUTHORIZED);
+        return;
     }
 
     try {
@@ -432,6 +443,7 @@ router.delete('/:boat_id/loads/:load_id', async (req, res) => {
 
     if (!req.headers.authorization) {
         constants.handle_response(res, c.UNAUTHORIZED, m.UNAUTHORIZED);
+        return;
     }
 
     try {

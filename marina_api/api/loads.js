@@ -66,23 +66,72 @@ async function get_load(id) {
     }
 }
 
+// Put a load
+async function put_load(id, item, volume, creation_date, url) {
+    let key = datastore.key([c.LOAD, parseInt(id, 10)]);
+
+    try {
+        const try_load = await get_load(id);
+        if (try_load) {
+            const params = {
+                "item": item,
+                "volume": volume,
+                "creation_date": creation_date,
+                "carrier": try_load.carrier,
+                "self": try_load.self
+            };
+            await datastore.update({"key": key, "data": params});
+            return c.NO_CONTENT;
+        } else {
+            const load = await post_load(volume, item, creation_date, url);
+            return load;
+        }
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+// Update load partially
+async function patch_load(id, body) {
+    try {
+        const load = await get_load(id);
+        if (!load) {
+            return c.NOT_FOUND;
+        }
+
+        for (let param of Object.keys(body)) {
+            if (Object.keys(load).includes(param)) {
+                load[param] = body[param];
+            }
+        }
+        delete load.id;
+        await datastore.update({key:load[ds.Datastore.KEY], data: load});
+
+        return c.NO_CONTENT;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 // Delete a load from database
 async function delete_load(id) {
     try {
         const load = await get_load(id);
 
         if (!load) {
-            return NOT_FOUND;
+            return c.NOT_FOUND;
         }
 
         if (load.carrier != null) {
             let boat = await Boats.get_boat(load.carrier.id);
             let boatLoads = boat.loads.filter( value => value.id != load.id);
-            
+
             boat.loads = boatLoads;
             await datastore.update(ds.createEntity(boat));
         }
-        return await datastore.delete(load[ds.Datastore.KEY]);
+
+        await datastore.delete(load[ds.Datastore.KEY]);
+        return c.NO_CONTENT;
 
     } catch (err) {
         console.log(err);
@@ -116,7 +165,6 @@ router.get('/', async (req, res) => {
     if (!constants.check_accept(req, res)) {
         return;
     }
-    
 
     try {
         const loads = await get_all_loads(req);
@@ -146,8 +194,46 @@ router.put('/:load_id', async (req, res) => {
         return;
     }
 
-    
+    if (!req.body.item || !req.body.volume || !req.body.creation_date) {
+        constants.handle_response(res, c.BAD_REQUEST, m.BAD_REQUEST_ATTR);
+        return;
+    }
+
+    try {
+        const url = ds.createURL(req);
+        const load = await put_load(req.params.load_id, req.body.item, req.body.volume, req.body.creation_date, url);
+        if (load === c.UNAUTHORIZED) {
+            constants.handle_response(res, c.UNAUTHORIZED);
+            return;
+        }
+        if (load === c.NO_CONTENT) {
+            constants.handle_response(res, c.NO_CONTENT);
+            return;
+        }
+        constants.handle_response(res, c.CREATED, load);
+    } catch (err) {
+        console.log(err);
+    }
 });
+
+// UPDATE a load partially
+router.patch('/:load_id', async (req, res) => {
+    if (!constants.check_accept(req, res)) {
+        return;
+    }
+
+    try {
+        const result = await patch_load(req.params.load_id, req.body);
+        if (result === c.NOT_FOUND){
+            constants.handle_response(res, result);
+        } else {
+            constants.handle_response(res, c.NO_CONTENT);
+        }
+        
+    } catch (err) {
+        console.log(err);
+    }
+})
 
 // DELETE a load from database
 router.delete('/:load_id', async (req, res) => {
@@ -156,7 +242,7 @@ router.delete('/:load_id', async (req, res) => {
     }
 
     try {
-        const status = await delete_load(req.params.load_id)
+        const status = await delete_load(req.params.load_id);
         constants.handle_response(res, status);
     } catch (err) {
         console.log(err);

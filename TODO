@@ -1,9 +1,0 @@
-Pagination
-    collection must include a property that indicates how many total items are in the collection
-
-CRUD on everything
-    PUT and PATCH for every entity
-
-STATUS CODES
-
-405
